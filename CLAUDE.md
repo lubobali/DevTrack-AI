@@ -69,14 +69,14 @@ DevTrack-AI/
 ## Deployment / Runtime Constraints
 
 - **API**: Supports NVIDIA NIM (Nemotron Ultra 253B) and Anthropic proxy. Set `LLM_PROVIDER=nvidia` or `LLM_PROVIDER=anthropic` in .env. Currently using NVIDIA NIM.
-- **SSH required for ccusage**: Must have SSH key access to root@100.115.173.71 (Hetzner). If SSH fails, ccusage data is skipped gracefully.
+- **SSH required for ccusage**: Must have SSH key access to root@[HETZNER_IP] (Hetzner). If SSH fails, ccusage data is skipped gracefully.
 - **Two Langfuse projects**: DevTrack-AI (own traces) and LuBot Staging (app traces). Different keys in .env. Do not mix them.
 - **No database**: Stateless. Each run pulls fresh data. Historical comparison requires saving outputs manually.
 
 ## Security / Privacy Boundaries
 
 - **.env contains secrets** — NEVER commit .env. Only .env.example goes to git.
-- **PII in commit messages** — Real commits contain server IPs (178.156.214.8), API keys (sk-de-...), email addresses. guardrails.py strips these BEFORE Claude sees them.
+- **PII in commit messages** — Real commits contain server IPs ([SERVER_IP]), API keys (sk-de-...), email addresses. guardrails.py strips these BEFORE Claude sees them.
 - **Forgejo token is read-only** — Can read repos/issues but cannot push code.
 - **SSH key gives root access to Hetzner** — ccusage_client.py only runs `ccusage` commands, never destructive operations.
 

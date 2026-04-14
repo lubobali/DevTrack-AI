@@ -47,7 +47,7 @@ Each feature has a dedicated prompt file in `claude_skills/`. Key design decisio
 | Schema Validation | Output | After Claude call | Malformed JSON, wrong enum values, missing fields |
 | Source Citations | Prompt | During Claude generation | Ungrounded claims, hallucinated metrics |
 
-PII redaction is critical for this project because commit messages contain real server IPs (178.156.214.8), API keys (sk-de-...), and email addresses. Without redaction, this data would leak to the Claude API.
+PII redaction is critical for this project because commit messages contain real server IPs ([SERVER_IP]), API keys (sk-de-...), and email addresses. Without redaction, this data would leak to the Claude API.
 
 ## Error Handling
 

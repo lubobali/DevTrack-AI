@@ -1,7 +1,7 @@
 """ccusage client — pulls Claude Code token usage from Hetzner via SSH.
 
 Runs `ccusage daily --json` on the server and parses per-project costs.
-Requires SSH access to the Hetzner server (root@100.115.173.71).
+Requires SSH access to the Hetzner server (${HETZNER_SSH_HOST}).
 """
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ import json
 import subprocess
 from datetime import datetime, timedelta, timezone
 
-HETZNER_HOST = "root@100.115.173.71"
+HETZNER_HOST = os.getenv("HETZNER_SSH_HOST", "root@localhost")
 LUBOT_PROJECT_PREFIX = "-srv-lubot-staging"
 
 

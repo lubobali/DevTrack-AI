@@ -89,7 +89,7 @@ DevTrack-AI v1.1 is **COMPLETE and deployed to GitHub**. All 4 core features wor
 |------|-------|---------|
 | DevTrack-AI (all) | Lubo Bali | data@lubobali.com |
 | LuBot Staging | Lubo Bali | agent@lubot.ai |
-| Hetzner Server | Lubo Bali | root@100.115.173.71 (Tailscale) |
+| Hetzner Server | Lubo Bali | root@[HETZNER_IP] (Tailscale) |
 | DataExpert Bootcamp | Zach Wilson | dataexpert.io |
 
 ## Recovery Steps
@@ -103,10 +103,10 @@ DevTrack-AI v1.1 is **COMPLETE and deployed to GitHub**. All 4 core features wor
 **If Forgejo API stops working:**
 1. Check `curl https://git.lubot.ai/api/v1/repos/lubo/lubot` with token
 2. If 401: regenerate token in Forgejo settings
-3. If server down: check Hetzner status, SSH to 100.115.173.71
+3. If server down: check Hetzner status, SSH to [HETZNER_IP]
 
 **If ccusage fails:**
-1. SSH to Hetzner: `ssh root@100.115.173.71`
+1. SSH to Hetzner: `ssh root@[HETZNER_IP]`
 2. Run: `ccusage daily --json | head -5`
 3. If not installed: `npm install -g ccusage`
 4. If SSH fails: check Tailscale connection

@@ -115,9 +115,9 @@ class TestPIIRedaction:
     def test_redacts_ip_addresses(self):
         from devtrack_ai.guardrails import redact_pii
 
-        text = "Server at 178.156.214.8 is down"
+        text = "Server at 192.168.1.100 is down"
         result, log = redact_pii(text)
-        assert "178.156.214.8" not in result
+        assert "192.168.1.100" not in result
         assert "[IP]" in result
 
     def test_redacts_api_keys(self):
@@ -141,7 +141,7 @@ class TestPIIRedaction:
     def test_returns_redaction_log(self):
         from devtrack_ai.guardrails import redact_pii
 
-        text = "Email data@lubobali.com and IP 100.115.173.71"
+        text = "Email data@lubobali.com and IP 10.0.0.1"
         result, log = redact_pii(text)
         assert len(log) == 2
         assert any(r["type"] == "email" for r in log)
@@ -427,7 +427,7 @@ class TestGuardrailIntegration:
         from devtrack_ai.schemas import IssueTriageInput
 
         inp = IssueTriageInput(
-            title="Server 178.156.214.8 is down",
+            title="Server 192.168.1.100 is down",
             body="The API key sk-de-78f0b96c003134 was exposed in logs. Contact admin@lubot.ai immediately.",
             comments=[],
         )
@@ -461,9 +461,9 @@ class TestGuardrailIntegration:
         from devtrack_ai.guardrails import redact_pii
 
         # Simulate Claude response containing PII
-        fake_output = '{"severity":"high","priority":"P1","labels":["security"],"recommended_owner":"team-auth","reasoning":"Server 178.156.214.8 has exposed key sk-de-abc123def456","confidence":"high","source_citations":["contact admin@test.com"]}'
+        fake_output = '{"severity":"high","priority":"P1","labels":["security"],"recommended_owner":"team-auth","reasoning":"Server 192.168.1.100 has exposed key sk-de-abc123def456","confidence":"high","source_citations":["contact admin@test.com"]}'
         redacted, log = redact_pii(fake_output)
-        assert "178.156.214.8" not in redacted
+        assert "192.168.1.100" not in redacted
         assert "sk-de-abc123def456" not in redacted
         assert "admin@test.com" not in redacted
         assert len(log) == 3
