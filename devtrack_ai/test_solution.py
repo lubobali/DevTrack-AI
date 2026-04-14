@@ -257,12 +257,34 @@ class TestMetricsCalculator:
         assert categorize_commit("TEST: add auth tests") == "test"
         assert categorize_commit("Update docs for API") == "other"
 
+    def test_has_test_files_detects_recr(self):
+        from devtrack_ai.metrics import has_test_files
+
+        assert has_test_files(["services-agent-api/tests/unit/test_auth.py"]) is True
+        assert has_test_files(["services-agent-api/stock/stock_data.py"]) is False
+        assert has_test_files(["tests/test_solution.py", "src/main.py"]) is True
+        assert has_test_files([]) is False
+
+    def test_commits_with_tests_count(self):
+        from devtrack_ai.metrics import calc_velocity
+
+        commits = [
+            {"message": "Refactor Step 15", "files_changed": ["tests/unit/test_handler.py", "routing/handler.py"]},
+            {"message": "Fix auth crash", "files_changed": ["auth/login.py"]},
+            {"message": "Feature: add stock", "files_changed": ["stock/data.py", "tests/unit/test_stock.py"]},
+        ]
+        v = calc_velocity(commits)
+        assert v["commits_with_tests"] == 2  # commit 1 and 3 touch test files
+        assert v["refactor_commits"] == 1
+        assert v["fix_commits"] == 1
+        assert v["feature_commits"] == 1
+
     def test_calc_code_health(self):
         from devtrack_ai.metrics import calc_code_health
 
         commits = [
-            {"message": "Refactor Step 15-P4: Final cleanup", "stats": {"additions": 50, "deletions": 8944}},
-            {"message": "Feature: add endpoint", "stats": {"additions": 200, "deletions": 0}},
+            {"message": "Refactor Step 15-P4: Final cleanup", "additions": 50, "deletions": 8944},
+            {"message": "Feature: add endpoint", "additions": 200, "deletions": 0},
         ]
         h = calc_code_health(commits)
         assert h["lines_added"] == 250
@@ -505,3 +527,17 @@ class TestCcusageDataPull:
         assert "total_tokens" in usage
         assert "sessions" in usage
         assert "available" in usage
+
+
+class TestEmailSender:
+    """Email sender uses Resend API."""
+
+    def test_send_report_email_returns_id(self):
+        from devtrack_ai.email_sender import send_report_email
+
+        result = send_report_email(
+            subject="DevTrack-AI Test Email",
+            html_body="<h1>Test</h1><p>This is a test from DevTrack-AI.</p>",
+        )
+        assert result is not None
+        assert "id" in result

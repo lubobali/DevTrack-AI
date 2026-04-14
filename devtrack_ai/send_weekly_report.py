@@ -1,0 +1,153 @@
+"""Generate and email the weekly engineering report.
+
+Run: python -m devtrack_ai.send_weekly_report
+Schedule with cron: 0 23 * * 0 cd /path/to/DevTrack-AI && venv/bin/python -m devtrack_ai.send_weekly_report
+"""
+
+from __future__ import annotations
+
+import json
+from datetime import datetime, timezone
+
+from devtrack_ai.email_sender import send_report_email
+from devtrack_ai.solution import generate_commit_digest, generate_report
+from devtrack_ai.git_client import fetch_commits
+from devtrack_ai.schemas import CommitDigestInput, CommitEntry
+
+
+def _build_html_report(report, digest) -> str:
+    """Build a clean HTML email from report + digest data."""
+    now = datetime.now(timezone.utc).strftime("%B %d, %Y")
+
+    wins_html = "".join(f"<li>{w}</li>" for w in report.wins) if report.wins else "<li>No wins recorded</li>"
+    concerns_html = "".join(f"<li>{c}</li>" for c in report.concerns) if report.concerns else "<li>No concerns</li>"
+    coaching_html = "".join(f"<li>{c}</li>" for c in report.coaching) if report.coaching else "<li>No coaching</li>"
+    priorities_html = "".join(f"<li>{p}</li>" for p in report.next_week_priorities) if report.next_week_priorities else "<li>No priorities set</li>"
+
+    digest_changes = "".join(f"<li>{c}</li>" for c in digest.what_changed) if digest.what_changed else "<li>No changes</li>"
+    digest_risks = "".join(f"<li>{r}</li>" for r in digest.risk_impact) if digest.risk_impact else "<li>No risks</li>"
+    digest_actions = "".join(f"<li>{a}</li>" for a in digest.action_needed) if digest.action_needed else "<li>No actions</li>"
+
+    burnout_section = ""
+    if report.burnout_risk in ("moderate", "high"):
+        color = "#f59e0b" if report.burnout_risk == "moderate" else "#ef4444"
+        burnout_section = f"""
+        <div style="background:{color}22; border-left:4px solid {color}; padding:12px; margin:16px 0; border-radius:4px;">
+            <strong>Burnout Risk: {report.burnout_risk.upper()}</strong><br>
+            {report.burnout_note}
+        </div>
+        """
+
+    llm_html = ""
+    if report.llm_insights:
+        llm_items = "".join(f"<li>{i}</li>" for i in report.llm_insights)
+        llm_html = f"""
+        <h2 style="color:#60a5fa;">LLM Insights</h2>
+        <ul>{llm_items}</ul>
+        """
+
+    return f"""
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width:640px; margin:0 auto; color:#e2e8f0; background:#0a0e1a; padding:32px; border-radius:12px;">
+        <div style="text-align:center; margin-bottom:24px;">
+            <h1 style="color:#60a5fa; margin:0;">DevTrack-AI</h1>
+            <p style="color:#94a3b8; margin:4px 0;">Weekly Engineering Report — {now}</p>
+        </div>
+
+        <div style="background:#131a2e; padding:20px; border-radius:8px; border:1px solid #1e2a45; margin-bottom:20px;">
+            <h2 style="color:#60a5fa; margin-top:0;">Summary</h2>
+            <p>{report.week_summary}</p>
+            <table style="width:100%; color:#e2e8f0;">
+                <tr>
+                    <td><strong>Velocity:</strong> {report.velocity_score.upper()}</td>
+                    <td><strong>Health:</strong> {report.health_score.upper()}</td>
+                    <td><strong>Burnout:</strong> {report.burnout_risk.upper()}</td>
+                </tr>
+            </table>
+        </div>
+
+        {burnout_section}
+
+        <div style="background:#131a2e; padding:20px; border-radius:8px; border:1px solid #1e2a45; margin-bottom:20px;">
+            <h2 style="color:#22c55e; margin-top:0;">Wins</h2>
+            <ul>{wins_html}</ul>
+        </div>
+
+        <div style="background:#131a2e; padding:20px; border-radius:8px; border:1px solid #1e2a45; margin-bottom:20px;">
+            <h2 style="color:#ef4444; margin-top:0;">Concerns</h2>
+            <ul>{concerns_html}</ul>
+        </div>
+
+        <div style="background:#131a2e; padding:20px; border-radius:8px; border:1px solid #1e2a45; margin-bottom:20px;">
+            <h2 style="color:#f59e0b; margin-top:0;">Coaching</h2>
+            <ul>{coaching_html}</ul>
+        </div>
+
+        {llm_html}
+
+        <div style="background:#131a2e; padding:20px; border-radius:8px; border:1px solid #1e2a45; margin-bottom:20px;">
+            <h2 style="color:#60a5fa; margin-top:0;">What Changed This Week</h2>
+            <ul>{digest_changes}</ul>
+            <h3 style="color:#ef4444;">Risks</h3>
+            <ul>{digest_risks}</ul>
+            <h3 style="color:#f59e0b;">Action Needed</h3>
+            <ul>{digest_actions}</ul>
+        </div>
+
+        <div style="background:#131a2e; padding:20px; border-radius:8px; border:1px solid #1e2a45; margin-bottom:20px;">
+            <h2 style="color:#a78bfa; margin-top:0;">Next Week Priorities</h2>
+            <ol>{priorities_html}</ol>
+        </div>
+
+        <div style="text-align:center; color:#64748b; font-size:12px; margin-top:24px;">
+            <p>Generated by DevTrack-AI — github.com/lubobali/DevTrack-AI</p>
+            <p>Powered by NVIDIA Nemotron Ultra 253B + Forgejo + Langfuse + ccusage</p>
+        </div>
+    </div>
+    """
+
+
+def main():
+    """Generate and send the weekly report."""
+    print("Generating weekly engineering report...")
+
+    # Generate engineering report (pulls from all 4 data sources)
+    report = generate_report(days=7)
+
+    # Generate commit digest
+    commits = fetch_commits(limit=50, sha="develop")
+    from datetime import timedelta
+    cutoff = datetime.now(timezone.utc) - timedelta(days=7)
+    recent = []
+    for c in commits:
+        try:
+            dt = datetime.fromisoformat(c["date"].replace("Z", "+00:00"))
+            if dt >= cutoff:
+                recent.append(c)
+        except (ValueError, TypeError):
+            continue
+
+    if recent:
+        digest_input = CommitDigestInput(
+            commits=[CommitEntry(sha=c["sha"], message=c["message"], author=c["author"], date=c["date"][:10]) for c in recent],
+            date_range_start=recent[-1]["date"][:10],
+            date_range_end=recent[0]["date"][:10],
+        )
+        digest = generate_commit_digest(digest_input)
+    else:
+        from devtrack_ai.schemas import CommitDigestEmail
+        digest = CommitDigestEmail(subject="No commits", what_changed=[], risk_impact=[], action_needed=[], source_citations=[])
+
+    # Build HTML email
+    html = _build_html_report(report, digest)
+
+    # Send
+    now = datetime.now(timezone.utc).strftime("%b %d")
+    subject = f"DevTrack-AI Weekly Report — {now}"
+
+    print(f"Sending to {__import__('os').getenv('REPORT_EMAIL')}...")
+    result = send_report_email(subject=subject, html_body=html)
+    print(f"Sent! Email ID: {result.get('id', 'unknown')}")
+
+
+if __name__ == "__main__":
+    main()

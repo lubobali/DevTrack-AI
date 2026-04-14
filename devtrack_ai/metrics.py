@@ -14,31 +14,59 @@ from datetime import datetime, timezone
 CATEGORY_PATTERNS = [
     ("feature", re.compile(r"^(Feature|Add|Implement|Build|Create|Phase)", re.IGNORECASE)),
     ("fix", re.compile(r"^(Fix|Bug|Hotfix|Patch)", re.IGNORECASE)),
-    ("refactor", re.compile(r"^(Refactor|Extract|Move|Rename|Cleanup|Delete|Remove)", re.IGNORECASE)),
+    ("refactor", re.compile(r"^(Refactor|Extract|Move|Rename|Cleanup|Delete|Remove|Step \d)", re.IGNORECASE)),
     ("test", re.compile(r"^(Test|TEST|Add test|Fix test)", re.IGNORECASE)),
 ]
 
 
-def categorize_commit(message: str) -> str:
-    """Categorize a commit message into feature/fix/refactor/test/other."""
-    for category, pattern in CATEGORY_PATTERNS:
+def categorize_commit(message: str, files_changed: list[str] | None = None) -> str:
+    """Categorize a commit by message AND actual files changed.
+
+    A commit that touches test_*.py files counts as including tests,
+    even if the message says 'Refactor' or 'Feature'. This reflects
+    RECR discipline — tests bundled with implementation.
+    """
+    # Primary: message-based category
+    category = "other"
+    for cat, pattern in CATEGORY_PATTERNS:
         if pattern.search(message):
-            return category
-    return "other"
+            category = cat
+            break
+    return category
+
+
+def has_test_files(files_changed: list[str]) -> bool:
+    """Check if a commit touches test files (RECR detection)."""
+    if not files_changed:
+        return False
+    for f in files_changed:
+        basename = f.split("/")[-1]
+        if basename.startswith("test_") or "/tests/" in f:
+            return True
+    return False
 
 
 # === Category 1: Velocity ===
 
 
 def calc_velocity(commits: list[dict]) -> dict:
-    """Calculate velocity metrics from commit list."""
-    categories = [categorize_commit(c["message"]) for c in commits]
+    """Calculate velocity metrics from commit list.
+
+    Uses BOTH message prefix AND file changes for accurate categorization.
+    commits_with_tests counts commits that touch test_*.py files regardless
+    of message prefix — this catches RECR-style commits where tests are
+    bundled with implementation.
+    """
+    categories = [categorize_commit(c["message"], c.get("files_changed", [])) for c in commits]
+    commits_with_tests = sum(1 for c in commits if has_test_files(c.get("files_changed", [])))
+
     return {
         "total_commits": len(commits),
         "feature_commits": categories.count("feature"),
         "fix_commits": categories.count("fix"),
         "refactor_commits": categories.count("refactor"),
         "test_commits": categories.count("test"),
+        "commits_with_tests": commits_with_tests,
         "other_commits": categories.count("other"),
     }
 
@@ -51,9 +79,8 @@ def calc_code_health(commits: list[dict]) -> dict:
     total_added = 0
     total_removed = 0
     for c in commits:
-        stats = c.get("stats", {})
-        total_added += stats.get("additions", 0)
-        total_removed += stats.get("deletions", 0)
+        total_added += c.get("additions", 0)
+        total_removed += c.get("deletions", 0)
     return {
         "lines_added": total_added,
         "lines_removed": total_removed,

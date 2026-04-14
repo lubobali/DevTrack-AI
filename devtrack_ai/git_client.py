@@ -28,17 +28,21 @@ def _api(path: str, params: dict | None = None) -> list | dict:
 def fetch_commits(limit: int = 50, sha: str = "develop") -> list[dict]:
     """Fetch recent commits from the repo."""
     raw = _api(f"/repos/{FORGEJO_REPO}/commits", {"sha": sha, "limit": limit})
-    return [
-        {
+    results = []
+    for c in raw:
+        files = [f["filename"] for f in c.get("files", []) or []]
+        stats = c.get("stats", {}) or {}
+        results.append({
             "sha": c["sha"][:7],
             "full_sha": c["sha"],
             "message": c["commit"]["message"].split("\n")[0],
             "author": c["commit"]["author"]["name"],
             "date": c["commit"]["author"]["date"],
-            "files_changed": [],
-        }
-        for c in raw
-    ]
+            "files_changed": files,
+            "additions": stats.get("additions", 0),
+            "deletions": stats.get("deletions", 0),
+        })
+    return results
 
 
 def fetch_issues(state: str = "open", limit: int = 50) -> list[dict]:

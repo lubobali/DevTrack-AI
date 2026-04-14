@@ -221,7 +221,8 @@ Velocity:
 - Feature commits: {velocity['feature_commits']}
 - Fix commits: {velocity['fix_commits']}
 - Refactor commits: {velocity['refactor_commits']}
-- Test commits: {velocity['test_commits']}
+- Test commits (message prefix): {velocity['test_commits']}
+- Commits that touch test files (RECR detection): {velocity['commits_with_tests']}
 - Other commits: {velocity['other_commits']}
 
 Work Patterns:
