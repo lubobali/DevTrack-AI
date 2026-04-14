@@ -221,9 +221,9 @@ Velocity:
 - Feature commits: {velocity['feature_commits']}
 - Fix commits: {velocity['fix_commits']}
 - Refactor commits: {velocity['refactor_commits']}
-- Test commits (message prefix): {velocity['test_commits']}
-- Commits that touch test files (RECR detection): {velocity['commits_with_tests']}
-- Other commits: {velocity['other_commits']}
+- Commits that include test files (RECR discipline): {velocity['commits_with_tests']} out of {velocity['total_commits']} ({round(velocity['commits_with_tests'] / max(velocity['total_commits'], 1) * 100)}% RECR compliance)
+- NOTE: This developer follows RECR (Red-Execute-Check-Repeat) — tests are bundled WITH implementation commits, not in separate "test only" commits. A high commits_with_tests ratio means GOOD test discipline, not bad.
+- Other commits (no test files): {velocity['total_commits'] - velocity['commits_with_tests']}
 
 Work Patterns:
 - Late night commits (midnight-6am): {work_patterns['late_night_commits']}

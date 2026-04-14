@@ -6,9 +6,9 @@
 
 ## Current Project Status
 
-DevTrack-AI v1.0 is **COMPLETE and deployed to GitHub**. All 3 core features work end-to-end with real data. 37 tests passing. 4 data sources wired. The tool generates actionable weekly engineering reports from real LuBot development data.
+DevTrack-AI v1.1 is **COMPLETE and deployed to GitHub**. All 4 core features work end-to-end with real data. 43 tests passing. 4 data sources wired. Weekly reports sent via Resend email. NVIDIA Nemotron Ultra 253B for analysis. The tool generates actionable weekly engineering reports from real LuBot development data.
 
-**Milestone: v1.0 — SHIPPED**
+**Milestone: v1.1 — SHIPPED (with email delivery)**
 
 ## Completed Tasks
 
