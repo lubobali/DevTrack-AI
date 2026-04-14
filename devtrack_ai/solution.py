@@ -17,6 +17,7 @@ from devtrack_ai.guardrails import check_context, redact_pii
 from devtrack_ai.langfuse_client import fetch_lubot_traces
 from devtrack_ai.metrics import calc_code_health, calc_velocity, calc_work_patterns
 from devtrack_ai.schemas import (
+    CommitDigestEmail,
     CommitDigestInput,
     EngineeringMetrics,
     IssueTriageInput,
@@ -36,6 +37,18 @@ def _load_skill(name: str) -> str:
     return (SKILLS_DIR / name).read_text()
 
 
+def _redact_model_strings(obj):
+    """Recursively redact PII from string values in a parsed dict/list."""
+    if isinstance(obj, str):
+        redacted, _ = redact_pii(obj)
+        return redacted
+    if isinstance(obj, list):
+        return [_redact_model_strings(item) for item in obj]
+    if isinstance(obj, dict):
+        return {k: _redact_model_strings(v) for k, v in obj.items()}
+    return obj
+
+
 def _parse_json_response(text: str, model_class, system_prompt: str, user_content: str):
     """Parse Claude's response as JSON, validate with Pydantic. Retry once on failure."""
     # Strip markdown code fences if present
@@ -47,6 +60,7 @@ def _parse_json_response(text: str, model_class, system_prompt: str, user_conten
 
     try:
         data = json.loads(cleaned)
+        data = _redact_model_strings(data)
         return model_class(**data)
     except (json.JSONDecodeError, Exception):
         # Retry once with explicit instruction
@@ -63,6 +77,7 @@ def _parse_json_response(text: str, model_class, system_prompt: str, user_conten
             lines = [l for l in lines if not l.strip().startswith("```")]
             retry_cleaned = "\n".join(lines)
         data = json.loads(retry_cleaned)
+        data = _redact_model_strings(data)
         return model_class(**data)
 
 
@@ -122,7 +137,32 @@ def summarize_pr(inp: PRSummaryInput) -> PRSummaryOutput:
     return _parse_json_response(response, PRSummaryOutput, system_prompt, user_content)
 
 
-# === Feature 3: Weekly Engineering Report ===
+# === Feature 3: Commit Digest Email ===
+
+
+def generate_commit_digest(inp: CommitDigestInput) -> CommitDigestEmail:
+    """Generate a stakeholder email summarizing commits in a date range."""
+    # Redact PII from commit messages
+    redacted_commits = []
+    for c in inp.commits:
+        msg, _ = redact_pii(c.message)
+        redacted_commits.append(f"[{c.sha}] {msg} by {c.author} on {c.date}")
+
+    # Check context
+    ctx = check_context("commits", {"commits": inp.commits})
+
+    # Build user content
+    user_content = f"Date range: {inp.date_range_start} to {inp.date_range_end}\n\nCommits:\n"
+    user_content += "\n".join(f"- {c}" for c in redacted_commits)
+    if not ctx["sufficient"]:
+        user_content += f"\n\nNOTE: {ctx['message']}"
+
+    system_prompt = _load_skill("commit_digest_email.md")
+    response = call_claude(system_prompt, user_content)
+    return _parse_json_response(response, CommitDigestEmail, system_prompt, user_content)
+
+
+# === Feature 4: Weekly Engineering Report ===
 
 
 class EngineeringReport:
@@ -292,8 +332,20 @@ def main():
         result = summarize_pr(inp)
         print(json.dumps({"summary": result.summary, "risks": len(result.risk_checklist)}, indent=2))
 
-    # Feature 3: Weekly Engineering Report
-    print("\n--- Feature 3: Weekly Engineering Report ---")
+    # Feature 3: Commit Digest Email
+    print("\n--- Feature 3: Commit Digest Email ---")
+    if commits:
+        from devtrack_ai.schemas import CommitDigestInput, CommitEntry
+        digest_inp = CommitDigestInput(
+            commits=[CommitEntry(sha=c["sha"], message=c["message"], author=c["author"], date=c["date"][:10]) for c in commits],
+            date_range_start=commits[-1]["date"][:10],
+            date_range_end=commits[0]["date"][:10],
+        )
+        digest_result = generate_commit_digest(digest_inp)
+        print(json.dumps({"subject": digest_result.subject, "what_changed": digest_result.what_changed, "action_needed": digest_result.action_needed}, indent=2))
+
+    # Feature 4: Weekly Engineering Report
+    print("\n--- Feature 4: Weekly Engineering Report ---")
     report = generate_report(days=7)
     print(json.dumps({
         "week_summary": report.week_summary,

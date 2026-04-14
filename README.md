@@ -30,12 +30,15 @@ DATA SOURCES                          PROCESSING                    OUTPUT
 ## Features
 
 ### 1. Issue Triage
-Feed it a GitHub/Forgejo issue — Claude assigns severity, priority, labels, and recommended owner based on strict rubrics (not vibes).
+Feed it a GitHub/Forgejo issue — the LLM assigns severity, priority, labels, and recommended owner based on strict rubrics (not vibes).
 
 ### 2. PR Summary
-Feed it a PR with diff snippets — Claude writes a technical summary and risk checklist with citations from the actual code.
+Feed it a PR with diff snippets — the LLM writes a technical summary and risk checklist with citations from the actual code.
 
-### 3. Weekly Engineering Report
+### 3. Commit Digest Email
+Feed it a list of commits from a date range — the LLM drafts a stakeholder email grouped by theme (not per-commit), with risk flags and action items. Every point cites specific commit SHAs.
+
+### 4. Weekly Engineering Report
 The main feature. Pulls data from all 4 sources and generates:
 - Velocity score (commits, features, refactors, fixes)
 - Code health assessment (monolith sizes, dead code, module extraction)
@@ -115,7 +118,7 @@ DevTrack-AI/
     schemas.py          — Pydantic v2 models for all I/O
     guardrails.py       — PII redaction + context sufficiency
     solution.py         — 3 features + shared pipeline + CLI
-    test_solution.py    — 37 tests across 10 classes
+    test_solution.py    — 40 tests across 11 classes
     sample_inputs/      — Real data snapshots from Forgejo
     sample_outputs/     — Real Claude responses
   claude_skills/
@@ -130,22 +133,22 @@ DevTrack-AI/
 
 ## Tests
 
-37 tests across 10 classes:
+40 tests across 11 classes:
 - Schema validation (6 tests) — no API calls
 - PII redaction (6 tests) — no API calls
 - Context sufficiency (4 tests) — no API calls
 - Git client (4 tests) — Forgejo API only
-- Metrics calculator (5 tests) — pure math
-- Claude client (1 test) — 1 API call
-- Feature pipelines (4 tests) — real Claude calls
-- Guardrail integration (4 tests) — end-to-end
+- Metrics calculator (4 tests) — pure math
+- LLM client (1 test) — 1 API call
+- Feature pipelines (7 tests) — real LLM calls (includes commit digest)
+- Guardrail integration (5 tests) — end-to-end with PII output redaction
 - Langfuse data pull (1 test) — Langfuse API
 - ccusage data pull (1 test) — SSH to server
 
 ## Built With
 
 - Python 3.13, Pydantic v2, pytest
-- Anthropic API (via DataExpert proxy)
+- NVIDIA NIM API (Nemotron Ultra 253B) or Anthropic API (configurable via .env)
 - Forgejo REST API
 - Langfuse v4
 - ccusage (Claude Code usage tracker)

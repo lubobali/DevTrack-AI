@@ -68,7 +68,7 @@ DevTrack-AI/
 
 ## Deployment / Runtime Constraints
 
-- **API**: Uses DataExpert proxy (bootcamp tokens) — will switch to NVIDIA NIM when tokens expire. Only change .env, no code changes.
+- **API**: Supports NVIDIA NIM (Nemotron Ultra 253B) and Anthropic proxy. Set `LLM_PROVIDER=nvidia` or `LLM_PROVIDER=anthropic` in .env. Currently using NVIDIA NIM.
 - **SSH required for ccusage**: Must have SSH key access to root@100.115.173.71 (Hetzner). If SSH fails, ccusage data is skipped gracefully.
 - **Two Langfuse projects**: DevTrack-AI (own traces) and LuBot Staging (app traces). Different keys in .env. Do not mix them.
 - **No database**: Stateless. Each run pulls fresh data. Historical comparison requires saving outputs manually.
@@ -92,7 +92,7 @@ DevTrack-AI/
 
 ### DON'T
 - Don't commit .env or any file with real API keys
-- Don't hardcode the Anthropic model name — read from config for easy switching
+- Don't hardcode model names — read from LLM_PROVIDER, ANTHROPIC_MODEL, NVIDIA_MODEL in .env
 - Don't add LLM calls to metrics.py — it must stay zero-cost
 - Don't weaken tests to make them pass — fix the implementation
 - Don't remove PII redaction for any reason

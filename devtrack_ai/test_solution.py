@@ -356,6 +356,43 @@ class TestFeaturePipelines:
         result = generate_report(days=7)
         assert len(result.source_citations) > 0
 
+    def test_generate_commit_digest_returns_valid_output(self):
+        from devtrack_ai.solution import generate_commit_digest
+        from devtrack_ai.schemas import CommitDigestInput, CommitEntry
+
+        inp = CommitDigestInput(
+            commits=[
+                CommitEntry(sha="cbea5ff", message="Refactor Step 15-P4: Final cleanup", author="lubo", date="2026-04-06"),
+                CommitEntry(sha="f776d48", message="Refactor Step 15-P3: Extract VISITOR_SEGMENTS", author="lubo", date="2026-04-06"),
+                CommitEntry(sha="10f2a68", message="Refactor Step 15-O: Extract DATABASE V3 analyst", author="lubo", date="2026-04-06"),
+                CommitEntry(sha="d352ba3", message="Fix mode switch duplicate key + frontend sync", author="lubo", date="2026-04-05"),
+                CommitEntry(sha="1cfa82f", message="Fix stock chat follow-up context loss", author="lubo", date="2026-04-05"),
+            ],
+            date_range_start="2026-04-05",
+            date_range_end="2026-04-06",
+        )
+        result = generate_commit_digest(inp)
+        assert result.subject is not None
+        assert len(result.what_changed) > 0
+        assert len(result.source_citations) > 0
+
+    def test_generate_commit_digest_has_all_sections(self):
+        from devtrack_ai.solution import generate_commit_digest
+        from devtrack_ai.schemas import CommitDigestInput, CommitEntry
+
+        inp = CommitDigestInput(
+            commits=[
+                CommitEntry(sha="abc123", message="Feature: add stock endpoint", author="lubo", date="2026-04-10"),
+                CommitEntry(sha="def456", message="Fix: auth crash on mobile", author="lubo", date="2026-04-11"),
+            ],
+            date_range_start="2026-04-10",
+            date_range_end="2026-04-11",
+        )
+        result = generate_commit_digest(inp)
+        assert isinstance(result.what_changed, list)
+        assert isinstance(result.risk_impact, list)
+        assert isinstance(result.action_needed, list)
+
 
 # === Phase 9: Integration Tests ===
 
@@ -397,10 +434,22 @@ class TestGuardrailIntegration:
         result = _parse_json_response(fake, IssueTriageOutput, "", "")
         assert result.severity == "high"
 
+    def test_pii_redacted_from_output(self):
+        """PII in Claude's response gets stripped before returning."""
+        from devtrack_ai.guardrails import redact_pii
+
+        # Simulate Claude response containing PII
+        fake_output = '{"severity":"high","priority":"P1","labels":["security"],"recommended_owner":"team-auth","reasoning":"Server 178.156.214.8 has exposed key sk-de-abc123def456","confidence":"high","source_citations":["contact admin@test.com"]}'
+        redacted, log = redact_pii(fake_output)
+        assert "178.156.214.8" not in redacted
+        assert "sk-de-abc123def456" not in redacted
+        assert "admin@test.com" not in redacted
+        assert len(log) == 3
+
     def test_full_pipeline_all_features(self):
-        """All 3 features end-to-end with real Forgejo data."""
-        from devtrack_ai.solution import generate_report, summarize_pr, triage_issue
-        from devtrack_ai.schemas import IssueTriageInput, PRSummaryInput
+        """All 4 features end-to-end with real Forgejo data."""
+        from devtrack_ai.solution import generate_commit_digest, generate_report, summarize_pr, triage_issue
+        from devtrack_ai.schemas import CommitDigestInput, CommitEntry, IssueTriageInput, PRSummaryInput
         from devtrack_ai.git_client import fetch_commits
 
         triage_result = triage_issue(IssueTriageInput(
@@ -417,6 +466,14 @@ class TestGuardrailIntegration:
             diff_snippets=[c["message"] for c in commits],
         ))
         assert pr_result.summary is not None
+
+        # Commit Digest
+        digest_result = generate_commit_digest(CommitDigestInput(
+            commits=[CommitEntry(sha=c["sha"], message=c["message"], author=c["author"], date=c["date"][:10]) for c in commits],
+            date_range_start=commits[-1]["date"][:10],
+            date_range_end=commits[0]["date"][:10],
+        ))
+        assert digest_result.subject is not None
 
         report = generate_report(days=7)
         assert report.week_summary is not None
