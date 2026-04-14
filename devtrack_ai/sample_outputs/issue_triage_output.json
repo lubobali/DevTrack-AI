@@ -1,0 +1,16 @@
+{
+  "severity": "medium",
+  "priority": "P2",
+  "labels": [
+    "test-gap",
+    "backend",
+    "bug"
+  ],
+  "recommended_owner": "team-platform",
+  "reasoning": "Test coverage gap that allows interface bugs to reach staging, indicating systematic testing weakness but not immediate production impact.",
+  "confidence": "high",
+  "source_citations": [
+    "Unit tests mock everything so interface bugs slip through",
+    "all 937 unit tests passed but staging revealed wrong args between modules"
+  ]
+}

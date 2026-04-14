@@ -1,0 +1,46 @@
+{
+  "commits": [
+    {
+      "sha": "5bdd84d",
+      "full_sha": "5bdd84de1c46bd9b13549045e151406ce224caf2",
+      "message": "Update refactor plan: Step 10.5-A/B done, Langfuse + thinking pattern shipped",
+      "author": "Lubo Bali",
+      "date": "2026-04-14T00:17:21Z",
+      "files_changed": []
+    },
+    {
+      "sha": "39cf768",
+      "full_sha": "39cf768ef48fdcccead6b4510fdf135f0ba09335",
+      "message": "Tie thinking steps to real work \u2014 big tech pattern (Claude/ChatGPT/Perplexity)",
+      "author": "Lubo Bali",
+      "date": "2026-04-14T00:02:21Z",
+      "files_changed": []
+    },
+    {
+      "sha": "6322957",
+      "full_sha": "6322957bd4d697e8a737b019cfc989b88d64c1d7",
+      "message": "Remove 'Still writing...' heartbeat spam \u2014 1 think event is enough",
+      "author": "Lubo Bali",
+      "date": "2026-04-13T23:02:48Z",
+      "files_changed": []
+    },
+    {
+      "sha": "a535300",
+      "full_sha": "a5353009c13f7833af4ab7bac6e126b1928d339b",
+      "message": "Fix thinking steps: backend 500ms stagger + frontend show 1 step at a time",
+      "author": "Lubo Bali",
+      "date": "2026-04-13T22:32:35Z",
+      "files_changed": []
+    },
+    {
+      "sha": "8619574",
+      "full_sha": "8619574434f23352a4a4e7fb470b7eaa47a98142",
+      "message": "Slow down thinking stagger to 400ms \u2014 steps were flying by unreadable",
+      "author": "Lubo Bali",
+      "date": "2026-04-13T22:18:20Z",
+      "files_changed": []
+    }
+  ],
+  "date_range_start": "2026-04-07",
+  "date_range_end": "2026-04-13"
+}

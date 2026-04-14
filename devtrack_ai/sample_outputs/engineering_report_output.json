@@ -1,0 +1,42 @@
+{
+  "week_summary": "High-velocity refactoring week with excellent systematic approach but zero test coverage. Major feature shipped (thinking steps + Langfuse observability) through 31 commits, but concerning late night work pattern and complete absence of tests.",
+  "velocity_score": "high",
+  "health_score": "warning",
+  "wins": [
+    "Excellent refactoring discipline: 10/31 commits focused on extraction and cleanup",
+    "Systematic approach visible in commit messages: Step 10.5-A1 through A4 shows planned execution",
+    "Major feature shipped: thinking steps UX with SSE streaming and Langfuse observability integration",
+    "Significant cleanup work: dead code removal and module extraction from monolith"
+  ],
+  "concerns": [
+    "Zero test commits in a 31-commit week - critical gap in test coverage for new features",
+    "10 late night commits (32% after midnight) indicates moderate burnout risk",
+    "Peak coding at 22:00 with late night pattern suggests unsustainable work rhythm",
+    "High Claude usage cost of $262.75 in 6 days may indicate over-reliance on AI assistance"
+  ],
+  "coaching": [
+    "Write tests for the thinking steps feature before adding more functionality",
+    "Set a hard cutoff at 23:00 - the late night commits show quality regression in messages",
+    "Add integration tests for the Langfuse observability pipeline you just shipped",
+    "Continue the systematic refactoring approach but pair each extraction with tests",
+    "Track your Claude usage patterns - $262 in 6 days suggests room for optimization"
+  ],
+  "burnout_risk": "moderate",
+  "burnout_note": "10 commits after midnight combined with 22:00 peak coding hour indicates extended late-night work sessions",
+  "llm_insights": [],
+  "next_week_priorities": [
+    "Add comprehensive tests for thinking steps feature",
+    "Establish healthier coding hours (stop by 23:00)",
+    "Continue refactoring but with test-first approach",
+    "Review and optimize Claude usage patterns",
+    "Complete the deferred extractions (VISITOR_SEGMENTS, RAG, DATA_MODE_SWITCH)"
+  ],
+  "source_citations": [
+    "31 total commits with 10 refactor commits",
+    "0 test commits across all work",
+    "10 late night commits (5bdd84d, 39cf768, etc.)",
+    "commits f9ecd01, 89fa168 show thinking steps feature",
+    "commit e2d2756 shows Langfuse integration",
+    "$262.75 Claude cost over 6 days"
+  ]
+}

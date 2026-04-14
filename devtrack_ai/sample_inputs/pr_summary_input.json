@@ -1,0 +1,9 @@
+{
+  "title": "Update refactor plan: Step 10.5-A/B done, Langfuse + thinking pattern shipped",
+  "description": "Recent LuBot staging development",
+  "diff_snippets": [
+    "Update refactor plan: Step 10.5-A/B done, Langfuse + thinking pattern shipped",
+    "Tie thinking steps to real work \u2014 big tech pattern (Claude/ChatGPT/Perplexity)",
+    "Remove 'Still writing...' heartbeat spam \u2014 1 think event is enough"
+  ]
+}
