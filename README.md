@@ -132,14 +132,13 @@ DevTrack-AI can be wired to [OpenClaw](https://github.com/openclaw/openclaw) so 
 2. `openclaw_skill/SKILL.md` — OpenClaw skill that teaches your agent to query the API
 3. You text your AI agent on WhatsApp → it curls the API → answers with real data
 
-**Example conversation:**
-```
-You:    "What did I ship today?"
-Alfred: "9 commits yesterday — observability blitz, Uptime Kuma, SSE fix..."
+### "How is my velocity this week?"
 
-You:    "Am I burning out?"
-Alfred: "Burnout risk: HIGH. 7 late-night commits, peak hour 7pm..."
-```
+![WhatsApp velocity query — 31 commits, 18 with tests, heavy refactor week](Screenshots/whatsapp-velocity.jpg)
+
+### "Am I burning out?"
+
+![WhatsApp burnout query — 7 late-night commits, burnout risk HIGH](Screenshots/whatsapp-burnout.jpg)
 
 ### Start the API server
 ```bash
