@@ -123,6 +123,33 @@ RESEND_FROM=onboarding@resend.dev
 REPORT_EMAIL=your-email@example.com
 ```
 
+## OpenClaw Integration — Real-Time WhatsApp Access
+
+DevTrack-AI can be wired to [OpenClaw](https://github.com/openclaw/openclaw) so you can query your engineering data from WhatsApp (or Telegram, Discord, etc.) in real time.
+
+**How it works:**
+1. `api.py` — FastAPI server that exposes all DevTrack metrics as REST endpoints
+2. `openclaw_skill/SKILL.md` — OpenClaw skill that teaches your agent to query the API
+3. You text your AI agent on WhatsApp → it curls the API → answers with real data
+
+**Example conversation:**
+```
+You:    "What did I ship today?"
+Alfred: "9 commits yesterday — observability blitz, Uptime Kuma, SSE fix..."
+
+You:    "Am I burning out?"
+Alfred: "Burnout risk: HIGH. 7 late-night commits, peak hour 7pm..."
+```
+
+### Start the API server
+```bash
+pip install fastapi uvicorn
+uvicorn api:app --host 0.0.0.0 --port 8099
+```
+
+### Install the OpenClaw skill
+Copy `openclaw_skill/SKILL.md` to `~/.openclaw/workspace/skills/devtrack/SKILL.md` and update `YOUR_SERVER_IP` with your server's address.
+
 ## Usage
 
 ### Run all 4 features
@@ -167,6 +194,10 @@ DevTrack-AI/
     pr_summary.md          — PR summary prompt (5 risk categories)
     commit_digest_email.md — Commit digest prompt (theme grouping)
     engineering_report.md  — Weekly coaching prompt (anti-sycophancy)
+  api.py                   — FastAPI server for OpenClaw integration
+  query.py                 — CLI wrapper for real-time queries
+  openclaw_skill/
+    SKILL.md               — OpenClaw skill definition (copy to workspace)
   Screenshots/             — Real email report screenshots
   CLAUDE.md                — AI operating context
   HANDOFF.md               — Human handoff document
