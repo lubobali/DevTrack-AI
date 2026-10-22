@@ -101,7 +101,7 @@ DevTrack-AI/
 
 ## Common Pitfalls and Debugging Tips
 
-- **SSE parsing**: DataExpert proxy returns raw SSE stream, not parsed Messages object. client.py handles this with manual line parsing. If you get `AttributeError: 'str' object has no attribute 'content'`, the proxy response format changed.
+- **SSE parsing**: The Anthropic-compatible proxy returns a raw SSE stream, not parsed Messages object. client.py handles this with manual line parsing. If you get `AttributeError: 'str' object has no attribute 'content'`, the proxy response format changed.
 - **Langfuse v4 import**: `from langfuse import observe` (NOT `from langfuse.decorators import observe` — that was v3).
 - **ccusage timeout**: SSH calls timeout after 30s. If Hetzner is slow or unreachable, the test will fail. This is expected — ccusage is an optional data source.
 - **Markdown fences in Claude output**: Claude sometimes wraps JSON in ```json blocks. _parse_json_response strips these before parsing. If parsing still fails, check for nested fences.

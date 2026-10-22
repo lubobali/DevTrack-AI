@@ -19,7 +19,7 @@ load_dotenv()
 
 
 def _call_anthropic(system_prompt: str, user_content: str, max_tokens: int) -> str:
-    """Call Anthropic-compatible API (DataExpert proxy). Returns text."""
+    """Call Anthropic-compatible API (Anthropic-compatible proxy). Returns text."""
     base_url = os.getenv("ANTHROPIC_BASE_URL", "")
     api_key = os.getenv("ANTHROPIC_API_KEY", "")
     model = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")

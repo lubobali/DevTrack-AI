@@ -180,7 +180,7 @@ class TestContextSufficiency:
 
 
 class TestGitClient:
-    """Real API calls to git.lubot.ai — no bootcamp tokens used."""
+    """Real API calls to git.lubot.ai — no LLM tokens used."""
 
     def test_fetch_commits_returns_list(self):
         from devtrack_ai.git_client import fetch_commits
@@ -310,7 +310,7 @@ class TestClaudeClient:
         assert len(result) > 0
 
 
-# === Phase 8: Core Features — burns bootcamp tokens ===
+# === Phase 8: Core Features — uses LLM tokens ===
 
 
 class TestFeaturePipelines:

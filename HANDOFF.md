@@ -46,13 +46,13 @@ DevTrack-AI v1.1 is **COMPLETE and deployed to GitHub**. All 4 core features wor
 | Dependency audit | LOW | 1 hour | pip audit integration in metrics |
 | Frontend dashboard | LOW | 8 hours | Simple web UI showing weekly trends |
 | Multi-repo support | LOW | 3 hours | Track HelloPayments and LuBot from one tool |
-| Switch to NVIDIA NIM | FUTURE | 30 min | Change .env when bootcamp tokens expire |
+| Switch to NVIDIA NIM | FUTURE | 30 min | Change .env when proxy tokens expire |
 
 ## Open Issues / Risks / Blockers
 
 | Issue | Severity | Status | Mitigation |
 |-------|----------|--------|------------|
-| Bootcamp tokens expire | MEDIUM | Known | Switch ANTHROPIC_BASE_URL to NVIDIA NIM. Only .env change. |
+| Proxy tokens expire | MEDIUM | Known | Switch ANTHROPIC_BASE_URL to NVIDIA NIM. Only .env change. |
 | ccusage requires SSH | LOW | Accepted | If Hetzner unreachable, data source skipped gracefully |
 | No historical data | MEDIUM | Planned | Each run is a snapshot. Need DB for trending. |
 | Langfuse hobby tier limits | LOW | Monitor | 491 traces in first day. May hit limits in weeks. |
@@ -62,12 +62,11 @@ DevTrack-AI v1.1 is **COMPLETE and deployed to GitHub**. All 4 core features wor
 
 | Date | Decision | Why |
 |------|----------|-----|
-| Apr 12, 2026 | Use raw HTTP instead of Anthropic SDK | DataExpert proxy returns SSE stream that SDK doesn't parse |
+| Apr 12, 2026 | Use raw HTTP instead of Anthropic SDK | The Anthropic-compatible proxy returns an SSE stream that SDK doesn't parse |
 | Apr 12, 2026 | Separate Langfuse projects for DevTrack vs LuBot | Different concerns — own costs vs app costs. Different keys. |
 | Apr 12, 2026 | metrics.py does all math locally | Prevents hallucination. Claude only interprets pre-calculated facts. |
 | Apr 12, 2026 | ccusage via SSH, not local | Claude Code runs on Hetzner, logs are there. Must SSH to read. |
 | Apr 12, 2026 | No LangChain | Proxy is Anthropic-style. SDK would add unnecessary abstraction. |
-| Apr 13, 2026 | One repo for HW1 + HW2 | DevTrack-AI exceeds both homework requirements. Staff DE move. |
 | Apr 13, 2026 | Anti-sycophancy in coaching prompt | Engineering reports must be honest. "Don't say great job without evidence." |
 | Apr 13, 2026 | Strict JSON schemas in all prompts | Closed enums + required fields = consistent, machine-parseable output. |
 
@@ -75,7 +74,6 @@ DevTrack-AI v1.1 is **COMPLETE and deployed to GitHub**. All 4 core features wor
 
 | Day | Task | Time |
 |-----|------|------|
-| Mon Apr 14 | Submit HW1 + HW2 to DataExpert bootcamp | 5 min |
 | Tue Apr 15 | Add Resend email delivery to agent@lubot.ai | 2 hrs |
 | Wed Apr 16 | Add cron scheduler (Sunday 11 PM weekly run) | 1 hr |
 | Thu Apr 17 | Run first real weekly report, review coaching quality | 30 min |
@@ -90,14 +88,13 @@ DevTrack-AI v1.1 is **COMPLETE and deployed to GitHub**. All 4 core features wor
 | DevTrack-AI (all) | Lubo Bali | data@lubobali.com |
 | LuBot Staging | Lubo Bali | agent@lubot.ai |
 | Hetzner Server | Lubo Bali | root@[HETZNER_IP] (Tailscale) |
-| DataExpert Bootcamp | Zach Wilson | dataexpert.io |
 
 ## Recovery Steps
 
 **If Claude API stops working:**
 1. Check .env — is ANTHROPIC_API_KEY valid?
 2. Test manually: `curl` the proxy URL with the key
-3. If bootcamp tokens expired: switch to NVIDIA NIM (change ANTHROPIC_BASE_URL)
+3. If proxy tokens expired: switch to NVIDIA NIM (change ANTHROPIC_BASE_URL)
 4. If proxy is down: wait or use direct Anthropic API
 
 **If Forgejo API stops working:**

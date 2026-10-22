@@ -2,7 +2,7 @@
 
 AI-powered engineering self-tracker. Pulls real data from your git server, LLM observability platform, and Claude Code usage logs — then generates a weekly coaching report that tells you what you did well, what to fix, and what to focus on next week.
 
-Built for personal use by a solo developer building a production AI platform (LuBot — 635 Python files, 5,600+ tests, 6 NVIDIA models). Also serves as a homework submission for DataExpert.io AI Engineering Bootcamp (Week 2).
+Built for personal use by a solo developer building a production AI platform (LuBot — 635 Python files, 5,600+ tests, 6 NVIDIA models).
 
 ## Weekly Report — Real Production Email
 
